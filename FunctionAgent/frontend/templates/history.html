@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>历史记录</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:#0d1117;color:#f0f6fc;min-height:100vh}
+.header{display:flex;align-items:center;padding:14px 24px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(240,246,252,0.1)}
+.header h1{font-size:1rem}
+.nav{display:flex;gap:8px;margin-left:auto}
+.nav a{padding:7px 16px;border-radius:8px;border:1px solid rgba(240,246,252,0.1);background:rgba(255,255,255,0.03);color:#8b949e;font-size:0.88rem;text-decoration:none}
+.nav a.active{background:#238636;border-color:#238636;color:#fff}
+.toolbar{max-width:800px;margin:24px auto 0;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+.toolbar .count{font-size:0.85rem;color:#8b949e}
+.btn-danger{background:rgba(248,81,73,0.1);border:1px solid rgba(248,81,73,0.3);color:#f85149;padding:7px 18px;border-radius:8px;cursor:pointer;font-size:0.85rem;transition:all 0.2s}
+.btn-danger:hover{background:rgba(248,81,73,0.2);border-color:#f85149}
+.btn-danger:disabled{opacity:0.4;cursor:not-allowed}
+.container{max-width:800px;margin:16px auto 32px;padding:0 24px}
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(240,246,252,0.08);border-radius:14px;padding:18px 22px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:14px}
+.card:hover{background:rgba(35,134,54,0.06);border-color:rgba(35,134,54,0.3)}
+.card .icon{font-size:1.6rem}
+.card .info{flex:1}
+.card .sid{font-weight:600;margin-bottom:4px;font-size:0.9rem}
+.card .meta{font-size:0.8rem;color:#8b949e;display:flex;gap:12px}
+.card .del{color:#f85149;font-size:0.8rem;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background 0.2s}
+.card .del:hover{background:rgba(248,81,73,0.1)}
+.empty{text-align:center;padding:60px;color:#8b949e}
+</style></head>
+<body>
+<div class="header">
+<h1>📋 对话历史</h1>
+<div class="nav"><a href="/">首页</a><a href="/chat">AI对话</a><a href="/tools">工具集</a><a href="/history" class="active">历史</a></div>
+</div>
+<div class="toolbar">
+<span class="count" id="count"></span>
+<button class="btn-danger" id="clearBtn" onclick="clearAll()" style="display:none">🗑️ 清空所有历史</button>
+</div>
+<div class="container" id="list"></div>
+<script>
+async function load(){
+  const r=await fetch("/api/sessions");
+  const d=await r.json();
+  const l=document.getElementById("list");
+  const btn=document.getElementById("clearBtn");
+  const cnt=document.getElementById("count");
+  if(!d.sessions||!d.sessions.length){
+    l.innerHTML='<div class="empty">暂无会话记录</div>';
+    cnt.textContent="";
+    btn.style.display="none";
+    return;
+  }
+  cnt.textContent="共 "+d.sessions.length+" 个会话";
+  btn.style.display="";
+  l.innerHTML=d.sessions.map(s=>`<div class="card" onclick="location.href='/chat?sid=${s.session_id}'"><div class="icon">💬</div><div class="info"><div class="sid">会话 ${s.session_id.slice(0,8)}</div><div class="meta"><span>🗨️ ${s.message_count} 条</span><span>🕐 ${new Date(s.last_active).toLocaleString('zh-CN')}</span></div></div><div class="del" onclick="event.stopPropagation();delS('${s.session_id}')">删除</div></div>`).join("");
+}
+async function delS(id){
+  if(!confirm("确认删除该会话？"))return;
+  await fetch("/api/session/"+id,{method:"DELETE"});
+  load();
+}
+async function clearAll(){
+  if(!confirm("确认清空所有对话历史？此操作不可恢复。"))return;
+  const r=await fetch("/api/sessions",{method:"DELETE"});
+  if(r.ok) load();
+  else alert("清空失败");
+}
+document.addEventListener("DOMContentLoaded",load);
+</script>
+</body></html>

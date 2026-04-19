@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能任务代理 — 首页</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(135deg,#0d1117 0%,#161b22 50%,#1a1f2e 100%);min-height:100vh;color:#f0f6fc}
+.header{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;background:rgba(0,0,0,0.4);border-bottom:1px solid rgba(255,255,255,0.06)}
+.logo{display:flex;align-items:center;gap:10px;font-size:1.2rem;font-weight:700}
+.logo-icon{font-size:1.6rem}
+.header-right{display:flex;gap:10px}
+.nav-btn{padding:8px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#8b949e;font-size:0.9rem;text-decoration:none;transition:all 0.2s}
+.nav-btn:hover{background:rgba(255,255,255,0.08);color:#f0f6fc}
+.nav-btn.primary{background:#238636;border-color:#238636;color:#fff}
+.nav-btn.primary:hover{background:#2ea043}
+.hero{text-align:center;padding:80px 20px 60px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 16px;border-radius:20px;background:rgba(56,139,253,0.15);border:1px solid rgba(56,139,253,0.3);color:#58a6ff;font-size:0.85rem;margin-bottom:24px}
+.hero h1{font-size:3.2rem;font-weight:800;background:linear-gradient(90deg,#58a6ff,#a371f7,#f78166);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px;line-height:1.2}
+.hero p{font-size:1.15rem;color:#8b949e;max-width:600px;margin:0 auto 40px;line-height:1.7}
+.hero-actions{display:flex;gap:12px;justify-content:center}
+.btn{padding:12px 28px;border-radius:12px;border:none;cursor:pointer;font-size:1rem;font-weight:600;text-decoration:none;transition:all 0.2s;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,#238636,#2ea043);color:#fff}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(35,134,54,0.4)}
+.btn-secondary{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#8b949e}
+.btn-secondary:hover{background:rgba(255,255,255,0.1);color:#f0f6fc}
+.tools-grid{max-width:1100px;margin:0 auto;padding:0 20px 60px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.tools-title{text-align:center;font-size:1.4rem;font-weight:700;color:#f0f6fc;margin-bottom:28px}
+.tool-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:28px;transition:all 0.25s;cursor:default}
+.tool-card:hover{transform:translateY(-3px);border-color:rgba(56,139,253,0.4);background:rgba(56,139,253,0.05)}
+.tool-icon{font-size:2.4rem;margin-bottom:14px}
+.tool-name{font-size:1.1rem;font-weight:700;color:#f0f6fc;margin-bottom:8px}
+.tool-desc{font-size:0.9rem;color:#8b949e;line-height:1.6}
+.tool-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.tool-tag{padding:3px 10px;border-radius:16px;font-size:0.78rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:#8b949e}
+.tool-card:hover .tool-tag{background:rgba(56,139,253,0.1);border-color:rgba(56,139,253,0.2);color:#58a6ff}
+.example-section{max-width:900px;margin:0 auto 60px;padding:0 20px}
+.example-section h2{font-size:1.3rem;margin-bottom:20px;color:#f0f6fc;text-align:center}
+.example-list{display:flex;flex-direction:column;gap:10px}
+.example-item{display:flex;align-items:center;gap:12px;padding:14px 18px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;cursor:pointer;transition:all 0.2s;font-size:0.95rem;color:#8b949e}
+.example-item:hover{background:rgba(255,255,255,0.05);border-color:rgba(56,139,253,0.3);color:#f0f6fc}
+.example-item .arrow{color:#58a6ff;opacity:0}
+.example-item:hover .arrow{opacity:1}
+.footer{text-align:center;padding:40px 20px;color:rgba(255,255,255,0.2);font-size:0.85rem;border-top:1px solid rgba(255,255,255,0.04)}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="logo"><span class="logo-icon">🤖</span>智能任务代理</div>
+<div class="header-right">
+<a href="/chat" class="nav-btn primary">🚀 开始对话</a>
+<a href="/tools" class="nav-btn">工具集</a>
+<a href="/history" class="nav-btn">历史</a>
+</div>
+</div>
+<div class="hero">
+<div class="hero-badge">⚡ Function Calling · 多轮对话 · ReAct Agent</div>
+<h1>懂你意图，替你执行</h1>
+<p>基于 Function Calling 的智能任务代理，将自然语言转化为真实操作。查日历、搜信息、管会议、读数据库——说一句话，Agent 自动完成。</p>
+<div class="hero-actions">
+<a href="/chat" class="btn btn-primary">🚀 立即体验</a>
+<a href="/tools" class="btn btn-secondary">📦 查看工具</a>
+</div>
+</div>
+<div class="tools-grid">
+<div class="tools-title">🛠️ 内置工具集</div>
+<div class="tool-card"><div class="tool-icon">📅</div><div class="tool-name">日历管理</div><div class="tool-desc">查询日程、创建事件、检查时间冲突，支持日期范围和关键词筛选</div><div class="tool-tags"><span class="tool-tag">calendar_query</span><span class="tool-tag">calendar_create</span><span class="tool-tag">会议</span></div></div>
+<div class="tool-card"><div class="tool-icon">🏢</div><div class="tool-name">会议室预约</div><div class="tool-desc">按人数/时间/设备搜索可用会议室，一句话完成预约，支持冲突检测</div><div class="tool-tags"><span class="tool-tag">room_search</span><span class="tool-tag">room_book</span><span class="tool-tag">会议室</span></div></div>
+<div class="tool-card"><div class="tool-icon">🌐</div><div class="tool-name">信息搜索</div><div class="tool-desc">网页搜索、城市天气预报、单位换算，实时获取最新信息</div><div class="tool-tags"><span class="tool-tag">web_search</span><span class="tool-tag">weather_query</span><span class="tool-tag">搜索</span></div></div>
+<div class="tool-card"><div class="tool-icon">🗄️</div><div class="tool-name">数据库查询</div><div class="tool-desc">自然语言转 SQL，自动理解员工/订单/产品数据，回答业务问题</div><div class="tool-tags"><span class="tool-tag">db_query</span><span class="tool-tag">db_schema</span><span class="tool-tag">NL2SQL</span></div></div>
+</div>
+<div class="example-section">
+<h2>💬 试试这些指令</h2>
+<div class="example-list">
+<div class="example-item" onclick="location.href='/chat?q=帮我查一下下周有什么日程安排'">📅 帮我查一下下周有什么日程安排 <span class="arrow">→</span></div>
+<div class="example-item" onclick="location.href='/chat?q=帮我预约一间能坐15人的会议室，明天下午3点到5点'">🏢 预约一间能坐15人的会议室，明天下午3点到5点 <span class="arrow">→</span></div>
+<div class="example-item" onclick="location.href='/chat?q=今天北京天气怎么样'">🌤️ 今天北京天气怎么样 <span class="arrow">→</span></div>
+<div class="example-item" onclick="location.href='/chat?q=公司里工资最高的员工是谁'">🗄️ 公司里工资最高的员工是谁 <span class="arrow">→</span></div>
+<div class="example-item" onclick="location.href='/chat?q=帮我创建一个日历事件，产品评审会议，下周一上午10点到12点'">📅 帮我创建一个产品评审会议，下周一上午10点到12点 <span class="arrow">→</span></div>
+<div class="example-item" onclick="location.href='/chat?q=500公里等于多少米'">🔄 500公里等于多少米 <span class="arrow">→</span></div>
+</div>
+</div>
+<div class="footer">智能任务代理系统 v1.0 · Function Calling · ReAct Agent · Redis 会话管理</div>
+</body>
+</html>

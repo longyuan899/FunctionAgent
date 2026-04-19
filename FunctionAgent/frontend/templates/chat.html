@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 对话 — 智能任务代理</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:rgba(240,246,252,0.1);--accent:#58a6ff;--accent2:#a371f7;--green:#238636;--text:#f0f6fc;--muted:#8b949e;--yellow:#d29922;--red:#f85149}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(0,0,0,0.3);border-bottom:var(--border);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100}
+.header h1{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.nav{display:flex;gap:8px}
+.nav a{padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--muted);font-size:0.88rem;text-decoration:none;transition:all 0.2s}
+.nav a:hover{background:rgba(255,255,255,0.06);color:var(--text)}
+.nav a.active{background:#238636;border-color:#238636;color:#fff}
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{width:260px;border-right:var(--border);background:var(--bg2);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:14px 16px;border-bottom:var(--border);display:flex;justify-content:space-between;align-items:center}
+.sidebar-title{font-size:0.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em}
+.new-btn{font-size:0.85rem;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);cursor:pointer;transition:all 0.2s}
+.new-btn:hover{background:rgba(35,134,54,0.2);border-color:#238636;color:#238636}
+.session-list{flex:1;overflow-y:auto;padding:8px}
+.s-item{padding:10px 12px;border-radius:8px;cursor:pointer;transition:all 0.15s;margin-bottom:2px;font-size:0.88rem;color:var(--muted);display:flex;align-items:center;gap:8px}
+.s-item:hover{background:rgba(255,255,255,0.04);color:var(--text)}
+.s-item.active{background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.2);color:var(--accent)}
+.s-item .del{opacity:0;font-size:0.78rem;color:#f85149;cursor:pointer}
+.chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.messages{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
+.msg{display:flex;gap:12px;animation:slideIn 0.25s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{flex-direction:row-reverse}
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;background:var(--bg3);border:1px solid var(--border)}
+.msg.user .avatar{background:linear-gradient(135deg,#238636,#2ea043);border-color:transparent}
+.bubble-wrap{max-width:72%;display:flex;flex-direction:column;gap:6px}
+.msg.user .bubble-wrap{align-items:flex-end}
+.bubble{padding:11px 16px;border-radius:14px;font-size:0.93rem;line-height:1.65;word-break:break-word;background:var(--bg3);border:1px solid var(--border);color:var(--text)}
+.msg.user .bubble{background:linear-gradient(135deg,#238636,#2ea043);border-color:transparent;color:#fff}
+.meta{font-size:0.75rem;color:var(--muted);padding:0 4px}
+.tool-call-card{background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);border-radius:10px;padding:10px 14px;margin-top:6px;font-size:0.85rem}
+.tool-call-card .tc-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.tc-icon{font-size:1.1rem}
+.tc-name{font-weight:600;color:var(--accent)}
+.tc-args{color:var(--muted);font-size:0.82rem;margin-bottom:6px;padding:6px 10px;background:rgba(0,0,0,0.2);border-radius:6px;font-family:monospace}
+.tc-result{color:#3fb950;font-size:0.83rem;padding:6px 10px;background:rgba(63,185,80,0.08);border-radius:6px;white-space:pre-wrap;max-height:200px;overflow-y:auto}
+.tc-result.error{color:#f85149;background:rgba(248,81,73,0.08)}
+.tc-time{font-size:0.72rem;color:var(--muted);margin-top:4px}
+.source-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:16px;font-size:0.72rem;background:rgba(163,113,247,0.1);color:#a371f7;border:1px solid rgba(163,113,247,0.2);margin-top:4px}
+.typing{display:flex;gap:12px;align-items:center}
+.typing .dots{display:flex;gap:4px;padding:11px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:14px}
+.typing .dots span{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:bounce 1.4s infinite}
+.typing .dots span:nth-child(2){animation-delay:0.2s}
+.typing .dots span:nth-child(3){animation-delay:0.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-5px);opacity:1}}
+.input-area{padding:14px 24px 16px;border-top:var(--border);background:rgba(0,0,0,0.2)}
+.input-row{display:flex;gap:10px;align-items:flex-end;background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:8px 8px 8px 18px;transition:border-color 0.2s,box-shadow 0.2s}
+.input-row:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(88,166,255,0.15)}
+.input-row textarea{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:0.93rem;font-family:inherit;resize:none;max-height:110px;line-height:1.5;padding:4px 0}
+.input-row textarea::placeholder{color:var(--muted)}
+.send-btn{width:38px;height:38px;border-radius:50%;border:none;background:var(--green);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0}
+.send-btn:hover{background:#2ea043;transform:scale(1.05)}
+.send-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.tool-indicator{font-size:0.8rem;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:6px}
+.tool-indicator .dot{width:6px;height:6px;border-radius:50%;background:#238636}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:3px}
+.welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px}
+.welcome-icon{font-size:4rem;margin-bottom:20px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.welcome h2{font-size:1.7rem;font-weight:700;margin-bottom:12px;background:linear-gradient(90deg,#58a6ff,#a371f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.welcome p{color:var(--muted);font-size:1rem;margin-bottom:30px;max-width:420px;line-height:1.6}
+.quick{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:580px}
+.quick-btn{padding:8px 16px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-size:0.85rem;cursor:pointer;transition:all 0.2s}
+.quick-btn:hover{background:rgba(88,166,255,0.08);border-color:rgba(88,166,255,0.3);color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="header"><h1>🤖 智能任务代理</h1></div>
+<div class="nav">
+<a href="/">首页</a>
+<a href="/chat" class="active">AI对话</a>
+<a href="/tools">工具集</a>
+<a href="/history">历史</a>
+<a href="/docs">API</a>
+</div>
+</div>
+<div class="main">
+<div class="sidebar">
+<div class="sidebar-header">
+<span class="sidebar-title">会话</span>
+<button class="new-btn" onclick="newChat()">+ 新对话</button>
+</div>
+<div class="session-list" id="sessionList"></div>
+</div>
+<div class="chat-area">
+<div class="messages" id="messages">
+<div class="welcome" id="welcome">
+<div class="welcome-icon">🤖</div>
+<h2>智能任务代理</h2>
+<p>说出你的需求，Agent 自动调用工具完成。查日历、搜信息、管会议、读数据库——说一句话就行。</p>
+<div class="quick">
+<div class="quick-btn" onclick="sendQ(this)">📅 查下周日程</div>
+<div class="quick-btn" onclick="sendQ(this)">🏢 预约会议室</div>
+<div class="quick-btn" onclick="sendQ(this)">🌤️ 北京天气</div>
+<div class="quick-btn" onclick="sendQ(this)">🗄️ 查数据库</div>
+</div>
+</div>
+</div>
+<div class="input-area">
+<div class="input-row">
+<textarea id="msgInput" rows="1" placeholder="输入你的需求... (Enter发送，Shift+Enter换行)" onkeydown="handleKey(event)"></textarea>
+<button class="send-btn" id="sendBtn" onclick="send()">▶</button>
+</div>
+<div class="tool-indicator"><span class="dot"></span>已注册 <span id="toolCount">-</span> 个工具，等待调用</div>
+</div>
+</div>
+</div>
+<script>
+let currentSid=null;let sending=false;
+const ms=document.getElementById("messages");
+const inp=document.getElementById("msgInput");
+
+document.addEventListener("DOMContentLoaded",()=>{
+  loadSessions();
+  autoResize();
+  inp.focus();
+  fetch("/api/tools").then(r=>r.json()).then(d=>{
+    document.getElementById("toolCount").textContent=d.tools?d.tools.length:0;
+  });
+  const params=new URLSearchParams(location.search);
+  if(params.has("q")){sendQ_text(params.get("q"))}
+});
+inp.addEventListener("input",()=>{inp.style.height="auto";inp.style.height=Math.min(inp.scrollHeight,110)+"px"});
+function autoResize(){inp.addEventListener("input",()=>{inp.style.height="auto";inp.style.height=Math.min(inp.scrollHeight,110)+"px"})}
+function newChat(){currentSid=null;ms.innerHTML='<div class="welcome" id="welcome"><div class="welcome-icon">🤖</div><h2>智能任务代理</h2><p>说出你的需求，Agent 自动调用工具完成。</p></div>';loadSessions()}
+async function loadSessions(){try{const r=await fetch("/api/sessions");const d=await r.json();const l=document.getElementById("sessionList");if(!d.sessions||!d.sessions.length){l.innerHTML='<div style="padding:16px;color:rgba(139,148,158,0.4);font-size:0.82rem">暂无会话</div>';return}l.innerHTML=d.sessions.map(s=>`<div class="s-item ${s.session_id===currentSid?'active':''}" onclick="loadS('${s.session_id}')"><span>💬</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.session_id.slice(0,8)}</span><span class="del" onclick="e=>e.stopPropagation();delS('${s.session_id}')">✕</span></div>`).join("")}catch(e){}}
+async function loadS(sid){currentSid=sid;try{const r=await fetch(`/api/history/${sid}`);const d=await r.json();ms.innerHTML="";(d.history||[]).forEach(m=>{if(m.role==="user")addUser(m.content,false);else if(m.role==="assistant")addBot(m.content,"",false)});loadSessions()}catch(e){}}
+async function delS(sid){await fetch(`/api/session/${sid}`,{method:"DELETE"});if(currentSid===sid)newChat();else loadSessions()}
+function sendQ(el){const t=el.textContent.trim();sendQ_text(t)}
+function sendQ_text(q){inp.value=q;send()}
+function send(){const m=inp.value.trim();if(!m||sending)return;inp.value="";inp.style.height="auto";addUser(m,true);doChat(m)}
+async function doChat(m){sending=true;document.getElementById("sendBtn").disabled=true;const w=document.getElementById("welcome");if(w)w.remove();addTyping();try{const body={message:m,session_id:currentSid||undefined};const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const d=await r.json();if(!r.ok)throw new Error(d.detail||"请求失败");currentSid=d.session_id;removeTyping();addBot(d.reply,"",true);loadSessions()}catch(e){removeTyping();addBot("❌ 错误: "+e.message,"",true)}finally{sending=false;document.getElementById("sendBtn").disabled=false;inp.focus()}}
+function renderTC(tc){const succ=tc.success!==false;const icon=succ?"⚡":"❌";return`<div class="tool-call-card"><div class="tc-header"><span class="tc-icon">${icon}</span><span class="tc-name">${esc(tc.name)}</span></div><div class="tc-args">${esc(tc.arguments||"{}")}</div><div class="tc-result ${succ?'':'error'}">${succ?'✅ '+esc(tc.result||''):'❌ '+esc(tc.error||tc.result||'')}</div><div class="tc-time">⏱ ${tc.elapsed_ms||0}ms</div></div>`}
+function addUser(m,scroll=true){const d=document.createElement("div");d.className="msg user";d.innerHTML=`<div class="avatar">👤</div><div class="bubble-wrap"><div class="bubble">${esc(m)}</div></div>`;ms.appendChild(d);if(scroll)scrollB()}
+function addBot(m,tcs="",scroll=true){const d=document.createElement("div");d.className="msg";d.innerHTML=`<div class="avatar">🤖</div><div class="bubble-wrap"><div class="bubble">${(m||"").replace(/\n/g,"<br>")}</div>${tcs}</div>`;ms.appendChild(d);if(scroll)scrollB()}
+function addTyping(){const d=document.createElement("div");d.id="typing";d.className="msg";d.innerHTML=`<div class="avatar">🤖</div><div class="typing"><div class="dots"><span></span><span></span><span></span></div></div>`;ms.appendChild(d);scrollB()}
+function removeTyping(){const t=document.getElementById("typing");if(t)t.remove()}
+function scrollB(){ms.scrollTop=ms.scrollHeight}
+function handleKey(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}}
+function esc(s){if(!s)return"";const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+</script>
+</body>
+</html>
